@@ -1,0 +1,27 @@
+## Build and compilation outputs
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+## Visual Studio & VS Code
+.vscode/*
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+.vs/
+
+## User-specific files & local settings
+*.rsuser
+*.suo
+*.user
+appsettings.Development.json
+appsettings.*.local.json
+
+## OS generated files
+.DS_Store
+Thumbs.db

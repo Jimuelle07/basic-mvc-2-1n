@@ -1,0 +1,374 @@
+/* ==========================================================================
+   diagram.css — the living triad (DiagramView). Every class is .dg-*.
+   ========================================================================== */
+
+.dg { position: relative; }
+.dg-wrap { position: relative; width: 100%; max-width: 700px; margin: 0 auto; }
+
+.dg-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ---- the cast ----------------------------------------------------------- */
+.dg-c-user       { color: var(--user); }
+.dg-c-controller { color: var(--controller); }
+.dg-c-model      { color: var(--model); }
+.dg-c-view       { color: var(--view); }
+
+.dg-stop--user       { stop-color: var(--user); }
+.dg-stop--controller { stop-color: var(--controller); }
+.dg-stop--model      { stop-color: var(--model); }
+.dg-stop--view       { stop-color: var(--view); }
+.dg-stop--paper      { stop-color: var(--paper); }
+.dg-stop--muted      { stop-color: var(--muted); }
+
+/* ---- night sky ---------------------------------------------------------- */
+.dg-orbit {
+  fill: none;
+  stroke: var(--line);
+  stroke-width: 1;
+  stroke-dasharray: 1 9;
+  transform-origin: 300px 262px;
+  animation: dg-spin 240s linear infinite;
+}
+.dg-orbit--inner { stroke-dasharray: 1 14; opacity: .7; animation-direction: reverse; animation-duration: 180s; }
+
+.dg-star {
+  fill: var(--paper);
+  opacity: .4;
+  animation: dg-twinkle 5s ease-in-out infinite alternate;
+}
+.dg-sparkle {
+  fill: var(--paper);
+  opacity: .5;
+  animation: dg-twinkle 4.4s ease-in-out infinite alternate;
+}
+.dg-dust {
+  fill: currentColor;
+  opacity: .28;
+  animation: dg-drift 22s ease-in-out infinite alternate;
+}
+
+@keyframes dg-spin    { to { transform: rotate(360deg); } }
+@keyframes dg-twinkle { from { opacity: .12; } to { opacity: .75; } }
+@keyframes dg-drift   {
+  0%   { transform: translate(0, 0); }
+  50%  { transform: translate(9px, -14px); }
+  100% { transform: translate(-6px, -26px); }
+}
+
+/* ---- wires -------------------------------------------------------------- */
+.dg-edge path { fill: none; stroke-linecap: round; }
+
+.dg-edge__wire  { stroke-width: 1.6; opacity: .42; transition: opacity .5s ease; }
+.dg-edge__ghost { stroke-width: 1.1; stroke-dasharray: 2 6; opacity: 0; transition: opacity .5s ease; }
+.dg-edge__flow  {
+  stroke-width: 2.3;
+  stroke-dasharray: 1 14;
+  opacity: .9;
+  animation: dg-flow 1.5s linear infinite;
+  transition: opacity .4s ease;
+}
+.dg-edge__flash { stroke: var(--danger); stroke-width: 3; opacity: 0; }
+
+.dg-edge--secondary .dg-edge__wire { stroke-width: 1.1; opacity: .2; stroke-dasharray: 3 6; }
+.dg-edge--secondary .dg-edge__flow {
+  stroke-width: 1.8;
+  stroke-dasharray: 1 18;
+  opacity: .4;
+  animation: dg-flow-2 2.8s linear infinite;
+}
+
+@keyframes dg-flow   { to { stroke-dashoffset: -15; } }
+@keyframes dg-flow-2 { to { stroke-dashoffset: -19; } }
+
+/* cut wire: the live half hangs on, the rest is a dotted ghost */
+.dg-edge--cut .dg-edge__flow  { opacity: 0; }
+.dg-edge--cut .dg-edge__wire  { opacity: .3; }
+.dg-edge--cut .dg-edge__ghost { opacity: .22; }
+.dg-edge--cut .dg-badge       { opacity: .35; }
+.dg-edge--cut .dg-edge__label { opacity: .3; }
+
+.dg-fray { opacity: 0; transition: opacity .4s ease .2s; }
+.dg-edge--cut .dg-fray { opacity: 1; }
+.dg-fray line { stroke: var(--muted); stroke-width: 1.2; stroke-linecap: round; }
+.dg-fray circle { fill: var(--danger); animation: dg-flicker 1.4s steps(2, end) infinite; }
+.dg-fray .dg-fray__late { animation-delay: -.7s; animation-duration: 1.9s; }
+
+@keyframes dg-flicker { 0% { opacity: 1; } 50% { opacity: .1; } 100% { opacity: .8; } }
+
+.dg-edge--flash .dg-edge__flash { animation: dg-edge-flash .75s ease-out; }
+.dg-edge--flash .dg-edge__ghost { animation: dg-ghost-red .75s ease-out; }
+@keyframes dg-edge-flash {
+  0%   { opacity: 1;  stroke-width: 5; }
+  30%  { opacity: .8; }
+  100% { opacity: 0;  stroke-width: 1.4; }
+}
+@keyframes dg-ghost-red { 0%, 40% { stroke: var(--danger); opacity: .9; } }
+
+.dg-edge--pulse .dg-edge__wire { animation: dg-wire-pulse .7s ease-out; }
+@keyframes dg-wire-pulse { 0% { opacity: 1; stroke-width: 3.4; } 100% { opacity: .42; stroke-width: 1.6; } }
+
+/* step badges + secondary labels */
+.dg-badge { transition: opacity .5s ease; }
+.dg-badge circle { fill: var(--ink); stroke: var(--line); stroke-width: 1; }
+.dg-badge text {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  fill: var(--muted);
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+.dg-edge__label {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 13px;
+  fill: var(--muted);
+  opacity: .75;
+  text-anchor: middle;
+  dominant-baseline: central;
+  transition: opacity .5s ease;
+}
+
+/* ---- nodes -------------------------------------------------------------- */
+.dg-node { outline: none; }
+.dg-node[role="button"] { cursor: pointer; }
+.dg-node__body { transform-origin: 0 0; transition: transform .45s var(--ease, ease); }
+.dg-node[role="button"]:hover .dg-node__body { transform: scale(1.05); }
+.dg-node[role="button"]:active .dg-node__body { transform: scale(.96); transition-duration: .1s; }
+
+.dg-node__halo {
+  transform-origin: 0 0;
+  animation: dg-breathe 4.8s ease-in-out infinite;
+  transition: opacity .6s ease;
+}
+.dg-node--controller .dg-node__halo { animation-delay: -1.2s; }
+.dg-node--model      .dg-node__halo { animation-delay: -2.4s; }
+.dg-node--view       .dg-node__halo { animation-delay: -3.6s; }
+@keyframes dg-breathe {
+  0%, 100% { transform: scale(.9);  opacity: .7; }
+  50%      { transform: scale(1.07); opacity: 1; }
+}
+
+.dg-ring {
+  fill: none;
+  stroke: currentColor;
+  transform-origin: 0 0;
+  transition: stroke-dasharray .6s ease, opacity .6s ease;
+}
+.dg-ring--inner { stroke-width: 1.2; opacity: .55; stroke-dasharray: 308 0; }
+.dg-ring--outer {
+  stroke-width: 1;
+  opacity: .38;
+  stroke-dasharray: 2 7;
+  animation: dg-spin 40s linear infinite;
+}
+.dg-node--model .dg-ring--outer { animation-direction: reverse; }
+
+.dg-node__orb { transition: opacity .5s ease; }
+.dg-node__rim {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.4;
+  opacity: .85;
+  stroke-dasharray: 226 0;
+  transition: stroke-dasharray .5s ease, opacity .5s ease;
+}
+
+.dg-node__glyph {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 600;
+  font-size: 34px;
+  fill: var(--ink);
+  text-anchor: middle;
+  transition: fill .4s ease, opacity .4s ease;
+}
+.dg-node__person { fill: var(--ink); opacity: .9; }
+
+.dg-node__name {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 400;
+  font-size: 22px;
+  fill: currentColor;
+  transition: opacity .5s ease;
+}
+.dg-node__role {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: .02em;
+  fill: var(--muted);
+  transition: opacity .5s ease;
+}
+
+.dg-node__hit { fill: transparent; pointer-events: all; }
+.dg-node__halo, .dg-node__orb, .dg-node__rim, .dg-ring, .dg-node__glyph,
+.dg-node__person, .dg-node__bloom, .dg-node__fault, .dg-node__focus, .dg-node__tag { pointer-events: none; }
+
+.dg-node__focus {
+  fill: none;
+  stroke: var(--paper);
+  stroke-width: 1.5;
+  stroke-dasharray: 3 5;
+  opacity: 0;
+  transition: opacity .2s ease;
+}
+.dg-node:focus-visible .dg-node__focus { opacity: .9; }
+
+/* UNPLUGGED stamp */
+.dg-node__tag {
+  opacity: 0;
+  transform-origin: 0 0;
+  transform: rotate(-10deg) scale(1.5);
+  transition: opacity .25s ease, transform .4s var(--ease, ease);
+}
+.dg-node__tag rect { fill: var(--ink); stroke: var(--danger); stroke-width: 1.2; }
+.dg-node__tag text {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: .16em;
+  fill: var(--danger);
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+
+/* ---- unplugged ---------------------------------------------------------- */
+.dg-node.dg-node--off { color: var(--muted); }
+.dg-node--off .dg-node__halo  { opacity: 0; animation-play-state: paused; }
+.dg-node--off .dg-ring--inner { stroke-dasharray: 60 9 34 14 88 7 45 51; opacity: .35; }
+.dg-node--off .dg-ring--outer { stroke-dasharray: 1 12; opacity: .18; animation-play-state: paused; }
+.dg-node--off .dg-node__rim   { stroke-dasharray: 40 6 70 10 50 50; opacity: .45; }
+.dg-node--off .dg-node__orb   { opacity: .85; }
+.dg-node--off .dg-node__glyph { fill: var(--paper); opacity: .3; }
+.dg-node--off .dg-node__name  { opacity: .45; text-decoration: line-through; }
+.dg-node--off .dg-node__role  { opacity: .35; }
+.dg-node--off .dg-node__tag   { opacity: 1; transform: rotate(-10deg) scale(1); }
+.dg-node--off:hover .dg-node__tag rect { fill: var(--ink-2); }
+
+/* the moment of unplugging: a quick shudder of the rings */
+.dg-node--crack .dg-ring--inner { animation: dg-crack .6s ease-out; }
+@keyframes dg-crack {
+  0%   { stroke: var(--danger); opacity: 1; transform: scale(1.08); }
+  25%  { transform: scale(.96) rotate(4deg); }
+  100% { transform: scale(1) rotate(0); }
+}
+
+/* plugging back in: snap + bloom of light */
+.dg-node__bloom { fill: none; stroke: currentColor; stroke-width: 2; opacity: 0; transform-origin: 0 0; }
+.dg-node--bloom .dg-node__bloom { animation: dg-bloom .95s ease-out; }
+.dg-node--bloom .dg-node__halo  { animation: dg-halo-flare .95s ease-out; }
+@keyframes dg-bloom {
+  0%   { opacity: 1; transform: scale(.7);  stroke-width: 7; }
+  100% { opacity: 0; transform: scale(2.7); stroke-width: .4; }
+}
+@keyframes dg-halo-flare {
+  0%   { opacity: 1;  transform: scale(1.7); }
+  100% { opacity: .8; transform: scale(1); }
+}
+
+/* runtime fault: red pulse */
+.dg-node__fault { fill: none; stroke: var(--danger); stroke-width: 2; opacity: 0; transform-origin: 0 0; }
+.dg-node--fault .dg-node__fault { animation: dg-fault .95s ease-out; }
+.dg-node--fault .dg-node__rim   { animation: dg-rim-red .95s ease-out; }
+@keyframes dg-fault {
+  0%   { opacity: 1;  transform: scale(.85); stroke-width: 6; }
+  55%  { opacity: .6; }
+  100% { opacity: 0;  transform: scale(2);   stroke-width: .5; }
+}
+@keyframes dg-rim-red { 0%, 45% { stroke: var(--danger); opacity: 1; stroke-width: 3; } }
+
+/* a message arrives */
+.dg-node--recv .dg-ring--inner { animation: dg-recv .52s ease-out; }
+@keyframes dg-recv {
+  0%   { opacity: 1; stroke-width: 3.2; transform: scale(1.1); }
+  100% { opacity: .55; stroke-width: 1.2; transform: scale(1); }
+}
+
+/* ---- comets & sparks ---------------------------------------------------- */
+.dg-particle { pointer-events: none; }
+.dg-particle__head circle { fill: currentColor; }
+.dg-particle__head .dg-particle__core { fill: var(--paper); }
+.dg-particle__trail { fill: currentColor; }
+.dg-particle--doomed .dg-particle__head { animation: dg-flicker .22s steps(2, end) infinite; }
+.dg-particle__label {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  fill: currentColor;
+  text-anchor: middle;
+  paint-order: stroke;
+  stroke: var(--ink);
+  stroke-width: 4px;
+  stroke-linejoin: round;
+}
+
+.dg-spark { fill: currentColor; pointer-events: none; }
+.dg-spark--danger { color: var(--danger); }
+
+.dg-burst {
+  fill: none;
+  stroke: var(--danger);
+  stroke-width: 2;
+  opacity: 0;
+  transform-origin: 0 0;
+  animation: dg-burst .6s ease-out forwards;
+}
+.dg-burst--late { stroke: var(--paper); animation-delay: .08s; animation-duration: .45s; }
+@keyframes dg-burst {
+  0%   { opacity: 1; transform: scale(.3); }
+  100% { opacity: 0; transform: scale(3.2); }
+}
+
+/* ---- caption ------------------------------------------------------------ */
+.dg-caption {
+  margin: .25rem 0 0;
+  padding: .45rem .9rem .2rem;
+  min-height: 2.2em;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--muted);
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+.dg-caption__idle  { opacity: .7; font-style: italic; }
+.dg-caption__who   { font-weight: 500; }
+.dg-caption__arrow,
+.dg-caption__sep   { color: var(--muted); opacity: .7; }
+.dg-caption__fail  { color: var(--danger); }
+.dg-caption--fail .dg-caption__label { text-decoration: line-through; text-decoration-color: var(--danger); }
+.dg-caption--new   { animation: dg-cap-in .35s ease-out; }
+@keyframes dg-cap-in { from { opacity: .15; transform: translateY(3px); } to { opacity: 1; transform: none; } }
+
+@media (max-width: 480px) {
+  .dg-node__role { font-size: 12.5px; }
+  .dg-node__name { font-size: 24px; }
+  .dg-caption    { font-size: 11.5px; }
+}
+
+/* ---- reduced motion: keep colour changes, drop movement ------------------ */
+@media (prefers-reduced-motion: reduce) {
+  .dg-orbit, .dg-star, .dg-sparkle, .dg-dust, .dg-ring--outer, .dg-node__halo,
+  .dg-edge__flow, .dg-fray circle, .dg-particle--doomed .dg-particle__head,
+  .dg-node--crack .dg-ring--inner, .dg-node--recv .dg-ring--inner,
+  .dg-node--bloom .dg-node__halo, .dg-caption--new {
+    animation: none !important;
+  }
+  .dg-node__body, .dg-node__tag, .dg-ring, .dg-node__rim { transition: none !important; }
+  .dg-node[role="button"]:hover .dg-node__body,
+  .dg-node[role="button"]:active .dg-node__body { transform: none; }
+  .dg-node__tag, .dg-node--off .dg-node__tag { transform: rotate(-10deg); }
+  .dg-edge__flow { stroke-dasharray: none; opacity: .25; }
+  .dg-edge--secondary .dg-edge__flow { opacity: .12; }
+  /* opacity-only flashes remain so the wiring still "speaks" */
+  .dg-node--bloom .dg-node__bloom { animation: dg-fade-flash .6s ease-out; }
+  .dg-node--fault .dg-node__fault { animation: dg-fade-flash .8s ease-out; }
+  @keyframes dg-fade-flash { 0% { opacity: 1; } 100% { opacity: 0; } }
+}
